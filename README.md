@@ -26,6 +26,12 @@ Package available in conda:
 scurvy flask
 ```
 
+Package in pip with dependencies with conda-available dependencies:
+
+```
+scurvy modin
+```
+
 Non-existent package:
 
 ```
