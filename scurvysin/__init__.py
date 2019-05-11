@@ -6,12 +6,16 @@ from typing import Dict
 
 
 def available_in_conda(req: str) -> bool:
-    r = subprocess.run(["conda", "install", "-d", req])
+    r = subprocess.run(["conda", "install", "-d", req],
+                       stderr=subprocess.PIPE,
+                       stdout=subprocess.PIPE)
     return not(r.returncode)
 
 
 def install_using_conda(req: str):
-    subprocess.call(["conda", "install", "-S", "-y", req])
+    subprocess.call(["conda", "install", "-S", "-y", req],
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE)
 
 
 def install_using_pip(req: str):
