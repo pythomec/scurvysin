@@ -1,4 +1,4 @@
-# Super reCURsiVe Yet the Same INstaller
+# Stupid reCURsiVe Yet Superb INstaller
 
 Simple tool that installs a package getting as much
 dependencies as possible using `conda` and `pip`
