@@ -6,8 +6,8 @@ from typing import Dict
 
 
 def available_in_conda(req: str) -> bool:
-    status, _ = subprocess.getstatusoutput(["conda", "install", "-d", req])
-    return not(status)
+    r = subprocess.run(["conda", "install", "-d", req])
+    return not(r.returncode)
 
 
 def install_using_conda(req: str):
@@ -21,9 +21,10 @@ def install_using_pip(req: str):
 def get_pip_requirements(req: str) -> Dict[str, str]:
     abspath = os.path.abspath(os.path.dirname(__file__))
     dep_script = os.path.join(abspath, "get_pip_deps.py")
-    output = subprocess.getoutput([sys.executable, dep_script, req])
+    r = subprocess.run([sys.executable, dep_script, req],
+                       stdout=subprocess.PIPE)
     try:
-        data = json.loads(output)
+        data = json.loads(r.stdout)
         if "error" in data:
             print(f"Error: {data['error']}")
             exit(1)
