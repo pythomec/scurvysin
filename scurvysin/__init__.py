@@ -26,12 +26,12 @@ def get_pip_requirements(req: str) -> Dict[str, str]:
         data = json.loads(output)
         if "error" in data:
             print(f"Error: {data['error']}")
-            exit(-2)
+            exit(1)
         else:
             return data["requirements"]
     except json.decoder.JSONDecodeError as err:
         print("Invalid JSON")
-        exit(-1)
+        exit(1)
 
 
 def try_install(req: str):

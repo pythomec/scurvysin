@@ -8,8 +8,6 @@ import shutil
 from io import StringIO
 import sys
 
-import click
-
 from pip._internal.resolve import Resolver
 from pip._internal.exceptions import HashError, HashErrors
 from pip._internal import main
@@ -88,9 +86,8 @@ def get_dependencies(r):
     return found_reqs
 
 
-@click.command()
-@click.argument("REQ")
-def run(req):
+def run():
+    req = sys.argv[1]
     try:
         deps = get_dependencies(req)
         data = {
