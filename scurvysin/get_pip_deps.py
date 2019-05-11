@@ -3,7 +3,6 @@ import json
 import subprocess
 import tempfile
 import os
-from itertools import chain
 import shutil
 from io import StringIO
 import sys
@@ -20,7 +19,7 @@ def get_dependencies(r):
     sys.stderr = StringIO()
 
     try:
-        found_reqs = []
+        found_reqs = []  # type: List[InstallRequirement]
         
         def new_resolve(self, requirement_set):
             # make the wheelhouse
@@ -47,23 +46,17 @@ def get_dependencies(r):
             # exceptions cannot be checked ahead of time, because
             # req.populate_link() needs to be called before we can make decisions
             # based on link type.
-            discovered_reqs = []  # type: List[InstallRequirement]
             hash_errors = HashErrors()
 
-            steps = 0
-            for req in chain(root_reqs, discovered_reqs):
+            for req in root_reqs:
                 try:
-                    discovered_reqs.extend(
+                    found_reqs.extend(
                         self._resolve_one(requirement_set, req)
                     )
-                    steps += 1
-                    if steps == 1:
-                        break
                 except HashError as exc:
                     exc.req = req
                     hash_errors.append(exc)
 
-            found_reqs.extend(discovered_reqs)
             if hash_errors:
                 raise hash_errors
 
