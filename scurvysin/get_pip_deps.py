@@ -5,6 +5,8 @@ import tempfile
 import os
 from itertools import chain
 import shutil
+from io import StringIO
+import sys
 
 import click
 
@@ -14,6 +16,11 @@ from pip._internal import main
 
 
 def get_dependencies(r):
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = StringIO()
+    sys.stderr = StringIO()
+
     try:
         found_reqs = []
         
@@ -70,9 +77,13 @@ def get_dependencies(r):
                 main(["download", r, "-qqqqq"])
         except:
             pass
+
+        if "Could not find" in sys.stderr.getvalue():
+            raise RuntimeError("Not found.")
         
     finally:
-        pass
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
     
     return found_reqs
 
@@ -80,8 +91,17 @@ def get_dependencies(r):
 @click.command()
 @click.argument("REQ")
 def run(req):
-    deps = get_dependencies(req)
-    data  = {dep.name : str(dep.req) for dep in deps}
+    try:
+        deps = get_dependencies(req)
+        data = {
+            "requirements": {
+                dep.name : str(dep.req) for dep in deps
+            }
+        }
+    except RuntimeError as exc:
+        data = {
+            "error": str(exc)
+        }
     print(json.dumps(data, indent=2))
 
 
