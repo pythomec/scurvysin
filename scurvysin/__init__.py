@@ -17,7 +17,7 @@ def install_using_conda(req: str):
 
 
 def install_using_pip(req: str):
-    subprocess.call(["pip", "install", req])
+    subprocess.call(["pip", "install", "--no-deps", req])
 
 
 def get_pip_requirements(req: str) -> Dict[str, str]:
