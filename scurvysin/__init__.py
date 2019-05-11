@@ -13,9 +13,7 @@ def available_in_conda(req: str) -> bool:
 
 
 def install_using_conda(req: str):
-    subprocess.call(["conda", "install", "-S", "-y", req],
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE)
+    subprocess.call(["conda", "install", "-S", "-y", req])
 
 
 def install_using_pip(req: str):
