@@ -69,16 +69,23 @@ def get_pip_requirements(req: str) -> Dict[str, str]:
         exit(1)
 
 
-def try_install(req: str, coflags: Coflags, pipflags: Pipflags):
+def try_install(req: str, opts: dict, coflags: Coflags, pipflags: Pipflags):
     print(f"Checking {req} in conda...")
     if available_in_conda(req):
         print(f"Package {req} found in conda.")
-        install_using_conda(req, coflags)
+        if opts["show_only"]:
+            print(f"Would install {req} using conda.")
+        else:
+            print(f"Installing {req} using conda.")
+            install_using_conda(req, coflags)
     else:
         print(f"Checking dependencies for {req} using pip...")
         requirements = get_pip_requirements(req)
         print(f"Dependencies for {req}: {list(requirements.values())}.")
         for requirement in requirements.values():
-            try_install(requirement, coflags, pipflags)
-        print(f"Installing {req} using pip.")
-        install_using_pip(req, pipflags)
+            try_install(requirement, opts, coflags, pipflags)
+        if opts["show_only"]:
+            print(f"Would install {req} using pip.")
+        else:
+            print(f"Installing {req} using pip.")
+            install_using_pip(req, pipflags)
