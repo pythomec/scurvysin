@@ -6,12 +6,19 @@ Simple tool that installs a package getting as much
 dependencies as possible using `conda` and `pip`
 in the remaining items from the dependency tree.
 
-**WARNING**: This is pre-alpha quality code.
+**WARNING**: This is pre-alpha quality code. It is not optimized,
+it does not cache intermediate results and it prints perhaps
+more information than necessary. It also can stop working.
 
 ## Requirements
 
 - Python 3.6
 - conda *if the tool is to have any sense*
+
+Tested against:
+
+- pip 18.1
+- conda 4.6.12
 
 ## Installation
 
