@@ -1,18 +1,18 @@
 from setuptools import setup, find_packages
 
-VERSION = "0.1"
+from scurvysin import __doc__, __version__
+
 
 options = dict(
     name='scurvysin',
-    version=VERSION,
+    version=__version__,
     packages=find_packages(),
     license='MIT',
     description='Pip & conda wrapper / warper.',
-    #long_description=__doc__.strip(),
-    author='',
-    author_email='',
+    long_description=__doc__.strip(),
+    author='Jan Pipek, Pavel Cahyna',
+    author_email='jan.pipek@gmail.com',
     url='https://github.com/pythomec/scurvysin',
-    # install_requires = [],
     python_requires="~=3.6",
     entry_points = {
         'console_scripts' : [

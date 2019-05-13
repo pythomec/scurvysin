@@ -1,8 +1,19 @@
+"""
+ScurvySin
+---------
+Simple tool that installs a package getting as much
+dependencies as possible using `conda` and `pip`
+in the remaining items from the dependency tree.
+"""
+
 import json
 import os
 import subprocess
 import sys
 from typing import Dict
+
+
+__version__ = "0.1.1"
 
 
 class CondaFlags:
