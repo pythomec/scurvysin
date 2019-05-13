@@ -11,7 +11,7 @@ in the remaining items from the dependency tree.
 ## Usage
 
 ```
-scurvy name-of-the-packages
+scurvy name-of-the-package
 ```
 
 ## Examples
@@ -39,3 +39,9 @@ Non-existent package:
 ```
 scurvy non-existent-package-0xxuhihihui
 ```
+
+## Acknowledgements
+
+The image is a blend of <https://commons.wikimedia.org/wiki/File:Face-badtooth.svg> and
+the official logo of Python from <https://www.python.org/community/logos/>.
+
