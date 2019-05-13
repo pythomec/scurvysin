@@ -4,7 +4,8 @@ import subprocess
 import sys
 from typing import Dict
 
-class Coflags:
+
+class CondaFlags:
     """Class representing optional flags for conda requested by user"""
 
     def __init__(self, args):
@@ -19,7 +20,8 @@ class Coflags:
         else:
             return []
 
-class Pipflags:
+
+class PipFlags:
     """Class representing optional flags for pip requested by user"""
 
     def __init__(self, args):
@@ -44,11 +46,11 @@ def available_in_conda(req: str) -> bool:
     return not(r.returncode)
 
 
-def install_using_conda(req: str, flags: Coflags):
+def install_using_conda(req: str, flags: CondaFlags) -> None:
     subprocess.call(["conda", "install", "-S", "-y"] + flags.expfl() + [req])
 
 
-def install_using_pip(req: str, flags: Pipflags):
+def install_using_pip(req: str, flags: PipFlags) -> None:
     subprocess.call(["pip"] +  flags.expfl() + ["--no-deps", req])
 
 
@@ -69,7 +71,7 @@ def get_pip_requirements(req: str) -> Dict[str, str]:
         exit(1)
 
 
-def try_install(req: str, opts: dict, coflags: Coflags, pipflags: Pipflags):
+def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
     print(f"Checking {req} in conda...")
     if available_in_conda(req):
         print(f"Package {req} found in conda.")

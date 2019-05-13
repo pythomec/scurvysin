@@ -2,7 +2,8 @@
 import sys
 import argparse
 
-from scurvysin import try_install, Coflags, Pipflags
+from scurvysin import try_install, CondaFlags, PipFlags
+
 
 def extopts(args: argparse.Namespace):
     return {"show_only" : args.show_only}
@@ -17,7 +18,7 @@ def main():
     parser.add_argument('req', help="distribution to install")
     args = parser.parse_args()
 
-    try_install(args.req, extopts(args), Coflags(args), Pipflags(args))
+    try_install(args.req, extopts(args), CondaFlags(args), PipFlags(args))
 
 
 if __name__ == "__main__":
