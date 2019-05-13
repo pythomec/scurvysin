@@ -8,6 +8,19 @@ in the remaining items from the dependency tree.
 
 **WARNING**: This is pre-alpha quality code.
 
+## Requirements
+
+- Python 3.6
+- conda *if the tool is to have any sense*
+
+## Installation
+
+Just use the regular pip install:
+
+```
+pip install scurvysin
+```
+
 ## Usage
 
 ```
