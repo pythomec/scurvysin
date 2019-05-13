@@ -23,6 +23,11 @@ pip install scurvysin
 
 ## Usage
 
+This package is designed to be used as a command-line tool.
+You might reuse it as a library but the API is not designed
+with this in mind (and it may lead to complications due 
+to global state).
+
 ```
 scurvy name-of-the-package
 ```
