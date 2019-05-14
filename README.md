@@ -1,5 +1,7 @@
 # Stupid reCURsiVe Yet Superb INstaller
 
+[![PyPI version](https://badge.fury.io/py/scurvysin.svg)](https://badge.fury.io/py/scurvysin)
+
 <img src="scurvy-logo.svg" style="height:256px;width:256px" />
 
 Simple tool that installs a package getting as much
