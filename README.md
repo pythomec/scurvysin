@@ -1,6 +1,6 @@
 # Stupid reCURsiVe Yet Superb INstaller
 
-<img src="scurvy-logo.svg" style="height:256px;width:256px" />
+<img src="logo.png" style="height:256px;width:256px" />
 
 Simple tool that installs a package getting as much
 dependencies as possible using `conda` and `pip`
@@ -67,6 +67,5 @@ scurvy non-existent-package-0xxuhihihui
 
 ## Acknowledgements
 
-The image is a blend of <https://commons.wikimedia.org/wiki/File:Face-badtooth.svg> and
-the official logo of Python from <https://www.python.org/community/logos/>.
+Logo courtesy of Pavel Pipek, based on the the official logo of Python from <https://www.python.org/community/logos/>.
 
