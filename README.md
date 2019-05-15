@@ -1,6 +1,8 @@
 # Stupid reCURsiVe Yet Superb INstaller
 
-<img src="logo.png" style="height:256px;width:256px" />
+<img src="logo.png" height="256" width="256" />
+
+[![PyPI version](https://badge.fury.io/py/scurvysin.svg)](https://badge.fury.io/py/scurvysin)
 
 Simple tool that installs a package getting as much
 dependencies as possible using `conda` and `pip`
