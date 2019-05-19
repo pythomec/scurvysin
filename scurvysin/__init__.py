@@ -1,10 +1,22 @@
+"""
+ScurvySin
+---------
+Simple tool that installs a package getting as much
+dependencies as possible using `conda` and `pip`
+in the remaining items from the dependency tree.
+"""
+
 import json
 import os
 import subprocess
 import sys
 from typing import Dict, List
 
-class Coflags:
+
+__version__ = "0.1.1"
+
+
+class CondaFlags:
     """Class representing optional flags for conda requested by user"""
 
     def __init__(self, args):
@@ -19,7 +31,8 @@ class Coflags:
         else:
             return []
 
-class Pipflags:
+
+class PipFlags:
     """Class representing optional flags for pip requested by user"""
 
     def __init__(self, args):
@@ -44,11 +57,11 @@ def available_in_conda(req: str) -> bool:
     return not(r.returncode)
 
 
-def install_using_conda(req: str, flags: Coflags):
+def install_using_conda(req: str, flags: CondaFlags) -> None:
     subprocess.call(["conda", "install", "-S", "-y"] + flags.expfl() + [req])
 
 
-def install_using_pip(req: str, flags: Pipflags):
+def install_using_pip(req: str, flags: PipFlags) -> None:
     subprocess.call(["pip"] +  flags.expfl() + ["--no-deps", req])
 
 
@@ -83,7 +96,7 @@ def parse_requirements_file(path: str) -> List[str]:
     return list(sorted(reqs))
 
 
-def try_install(req: str, opts: dict, coflags: Coflags, pipflags: Pipflags):
+def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
     if opts.pop("requirement", False):
         print(f"Reading requirements file {req}")
         requirements = parse_requirements_file(req)

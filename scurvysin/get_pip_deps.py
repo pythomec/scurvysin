@@ -28,8 +28,8 @@ import warnings
 from io import StringIO
 from typing import List
 
+# Sin: Importing from protected modules
 from pip._internal import main
-from pip._internal.exceptions import HashError, HashErrors
 from pip._internal.resolve import Resolver, ensure_dir
 from pip._internal.req.req_install import InstallRequirement
 
@@ -66,6 +66,7 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
     try:
         found_reqs = []  # type: List[InstallRequirement]
 
+        # Sin: Monkey-patching
         def new_resolve(self, requirement_set):
             # make the wheelhouse
             if self.preparer.wheel_download_dir:
