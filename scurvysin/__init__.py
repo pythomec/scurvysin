@@ -110,6 +110,7 @@ def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -
         print(f"Dependencies from {req}: {requirements}.")
         for requirement in requirements:
             try_install(requirement, opts, coflags, pipflags)
+        return
     if already_satisfied(req):
         print(f"Condition {req} already satistfied.")
         return
