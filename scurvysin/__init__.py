@@ -11,10 +11,10 @@ import os
 import subprocess
 import sys
 from pkg_resources import Requirement, Environment
-from typing import Dict
+from typing import Dict, List
 
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 class CondaFlags:
@@ -89,7 +89,27 @@ def get_pip_requirements(req: str) -> Dict[str, str]:
         exit(1)
 
 
+def parse_requirements_file(path: str) -> List[str]:
+    reqs = []
+    with open(path, "r") as infile:
+        for line in infile:
+            line = line.strip()
+            if line.startswith("-"):
+                raise NotImplementedError("Pip flags in requirements files are not understood.")
+            elif line.startswith("#"):
+                continue
+            else:
+                reqs.append(line)
+    return list(sorted(reqs))
+
+
 def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
+    if opts.pop("requirement", False):
+        print(f"Reading requirements file {req}")
+        requirements = parse_requirements_file(req)
+        print(f"Dependencies from {req}: {requirements}.")
+        for requirement in requirements:
+            try_install(requirement, opts, coflags, pipflags)
     if already_satisfied(req):
         print(f"Condition {req} already satistfied.")
         return
