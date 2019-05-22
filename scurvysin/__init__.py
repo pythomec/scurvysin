@@ -10,6 +10,7 @@ import json
 import os
 import subprocess
 import sys
+from pkg_resources import Requirement, Environment
 from typing import Dict, List
 
 
@@ -48,6 +49,12 @@ class PipFlags:
             return ['download']
         else:
             return ['install']
+
+
+def already_satisfied(req: str) -> bool:
+    requirement = Requirement(req)
+    environment = Environment()
+    return any(dist in requirement for dist in environment[requirement.name])
 
 
 def available_in_conda(req: str) -> bool:
@@ -103,6 +110,9 @@ def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -
         print(f"Dependencies from {req}: {requirements}.")
         for requirement in requirements:
             try_install(requirement, opts, coflags, pipflags)
+        return
+    if already_satisfied(req):
+        print(f"Condition {req} already satistfied.")
         return
     print(f"Checking {req} in conda...")
     if available_in_conda(req):
