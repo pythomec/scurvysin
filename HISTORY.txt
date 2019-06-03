@@ -1,0 +1,4 @@
+0.1.2 (3th June)
+----------------
+- Added: `-r` argument
+- Improved: Will not check for conditions already installed
