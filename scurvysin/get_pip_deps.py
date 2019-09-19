@@ -28,9 +28,17 @@ import warnings
 from io import StringIO
 from typing import List
 
+import pip
+
 # Sin: Importing from protected modules
 from pip._internal import main
-from pip._internal.resolve import Resolver, ensure_dir
+pip_major_minor = [int(v) for v in pip.__version__.split(".")[:2]]
+
+if pip_major_minor >= [19, 2]:
+    from pip._internal.legacy_resolve import Resolver
+    from pip._internal.utils.misc import ensure_dir
+else:
+    from pip._internal.resolve import Resolver, ensure_dir
 from pip._internal.req.req_install import InstallRequirement
 
 
