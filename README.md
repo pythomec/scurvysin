@@ -12,15 +12,17 @@ in the remaining items from the dependency tree.
 it does not cache intermediate results and it prints perhaps
 more information than necessary. It also can stop working.
 
+**DISCLAIMER**: Several bad practices are used in the code. On purpose.
+
 ## Requirements
 
-- Python 3.6
+- Python 3.6+
 - conda *if the tool is to have any sense*
 
 Tested against:
 
-- pip 18.1
-- conda 4.6.12
+- pip 18.1, 19.1, 19.2
+- conda 4.6.12, 4.7.11
 
 ## Installation
 
