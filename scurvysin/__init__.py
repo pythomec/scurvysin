@@ -10,6 +10,7 @@ import json
 import os
 import subprocess
 import sys
+import warnings
 from pkg_resources import Requirement, Environment
 from typing import Dict, List
 
@@ -49,6 +50,15 @@ class PipFlags:
             return ['download']
         else:
             return ['install']
+
+
+def inside_venv() -> bool:
+    """Check whether we are in a virtual environment.
+
+    In this situation, running scurvy makes no sense.
+    Any command will issue a warning.
+    """
+    return "VIRTUAL_ENV" in os.environ
 
 
 def already_satisfied(req: str) -> bool:
@@ -104,6 +114,9 @@ def parse_requirements_file(path: str) -> List[str]:
 
 
 def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
+    if inside_venv:
+        warnings.warn(f"Virtual environment active, cannot use `conda`. Suggestion: Use `pip`.")
+
     if opts.pop("requirement", False):
         print(f"Reading requirements file {req}")
         requirements = parse_requirements_file(req)
@@ -114,22 +127,25 @@ def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -
     if already_satisfied(req):
         print(f"Condition {req} already satistfied.")
         return
-    print(f"Checking {req} in conda...")
-    if available_in_conda(req):
-        print(f"Package {req} found in conda.")
-        if opts["show_only"]:
-            print(f"Would install {req} using conda.")
-        else:
-            print(f"Installing {req} using conda.")
-            install_using_conda(req, coflags)
+    
+    if not inside_venv:
+        print(f"Checking {req} in conda...")
+        if available_in_conda(req):
+            print(f"Package {req} found in conda.")
+            if opts["show_only"]:
+                print(f"Would install {req} using conda.")
+            else:
+                print(f"Installing {req} using conda.")
+                install_using_conda(req, coflags)
+            return
+
+    print(f"Checking dependencies for {req} using pip...")
+    requirements = get_pip_requirements(req)
+    print(f"Dependencies for {req}: {list(requirements.values())}.")
+    for requirement in requirements.values():
+        try_install(requirement, opts, coflags, pipflags)
+    if opts["show_only"]:
+        print(f"Would install {req} using pip.")
     else:
-        print(f"Checking dependencies for {req} using pip...")
-        requirements = get_pip_requirements(req)
-        print(f"Dependencies for {req}: {list(requirements.values())}.")
-        for requirement in requirements.values():
-            try_install(requirement, opts, coflags, pipflags)
-        if opts["show_only"]:
-            print(f"Would install {req} using pip.")
-        else:
-            print(f"Installing {req} using pip.")
-            install_using_pip(req, pipflags)
+        print(f"Installing {req} using pip.")
+        install_using_pip(req, pipflags)
