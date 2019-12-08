@@ -14,7 +14,7 @@ from pkg_resources import Requirement, Environment
 from typing import Dict, List
 
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 
 class CondaFlags:

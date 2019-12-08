@@ -1,3 +1,7 @@
+0.1.4 (8th December 2019)
+-------------------------
+- Changed: Comments in requirements.txt
+
 0.1.3 (19th September 2019)
 ---------------------------
 - Fixed #5: Not working with pip 19.2
