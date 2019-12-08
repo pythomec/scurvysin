@@ -93,10 +93,10 @@ def parse_requirements_file(path: str) -> List[str]:
     reqs = []
     with open(path, "r") as infile:
         for line in infile:
-            line = line.strip()
+            line = line.split("#")[0].strip()
             if line.startswith("-"):
                 raise NotImplementedError("Pip flags in requirements files are not understood.")
-            elif not line or line.startswith("#"):
+            elif not line:
                 continue
             else:
                 reqs.append(line)
