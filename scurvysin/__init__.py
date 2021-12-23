@@ -64,6 +64,10 @@ class PipFlags:
             return ['install']
 
 
+class NotFoundError(RuntimeError):
+    pass
+
+
 def already_satisfied(req: str) -> bool:
     requirement = Requirement(req)
     environment = Environment()
@@ -95,13 +99,11 @@ def get_pip_requirements(req: str) -> Dict[str, str]:
         # print(r.stdout)
         data = json.loads(r.stdout)
         if "error" in data:
-            print(f"Error: {data['error']}")
-            exit(1)
+            raise NotFoundError(f"Error: {data['error']}")
         else:
             return data["requirements"]
     except json.decoder.JSONDecodeError as err:
-        print("Invalid JSON")
-        exit(1)
+        raise NotFoundError(f"Invalid JSON: {r.stdout[:100]}...")
 
 
 def parse_requirements_file(path: str) -> List[str]:
@@ -144,7 +146,11 @@ def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -
             install_using_conda(req, coflags)
     else:
         print(f"Checking dependencies for {req} using pip...")
-        requirements = get_pip_requirements(req)
+        try:
+            requirements = get_pip_requirements(req)
+        except RuntimeError as exc:
+            print(exc)
+            sys.exit(1)
         print(f"Dependencies for {req}: {list(requirements.values())}.")
         for requirement in requirements.values():
             try_install(requirement, opts, coflags, pipflags)

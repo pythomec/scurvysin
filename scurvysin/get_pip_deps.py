@@ -75,8 +75,6 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
     class FakeDownloadCommand(DownloadCommand):
         @with_cleanup
         def run(self, options: Values, args: List[str]) -> int:
-            print(options)
-
             options.ignore_installed = True
             # editable doesn't really make sense for `pip download`, but the bowels
             # of the RequirementSet code require that property.
@@ -141,9 +139,12 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
         command.main([r])
         requirements.sort(key=lambda l: l.name)
 
+        errors = sys.stderr.getvalue()
+        if "Could not find a version" in errors:
+            raise RuntimeError("Not found.")
+
         # The set contains the package itself, so we need to remove it.
-        return [l for l in requirements if str(l.req) != r]
-        
+        return [l for l in requirements if str(l.req) != r]       
     finally:
         sys.stdout = old_stdout
         sys.stderr = old_stderr
