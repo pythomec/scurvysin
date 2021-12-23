@@ -117,6 +117,10 @@ def parse_requirements_file(path: str) -> List[str]:
 
 
 def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
+    if os.environ.get("VIRTUAL_ENV"):
+        print("In a virtual environment, please use the `pip` command.")
+        exit(-1)        
+
     if opts.pop("requirement", False):
         print(f"Reading requirements file {req}")
         requirements = parse_requirements_file(req)
