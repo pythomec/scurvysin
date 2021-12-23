@@ -1,8 +1,14 @@
-0.1.3 (19th September 2019)
+2021.1 (23 Dec 2021)
+--------------------
+- Change: semver -> calver
+- Requirements: Tested with pip 21.2+
+- Added: mamba support
+
+0.1.3 (19 Sep 2019)
 ---------------------------
 - Fixed #5: Not working with pip 19.2
 
-0.1.2 (3th June 2019)
+0.1.2 (3 Jun 2019)
 ---------------------
 - Added: `-r` argument
 - Improved: Will not check for conditions already installed
