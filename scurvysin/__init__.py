@@ -65,7 +65,8 @@ class PipFlags:
             return ['install']
 
 
-class PiPArgParser(argparse.ArgumentParser):
+class PipArgumentParser(argparse.ArgumentParser):
+    """Parser to support additional pip --arguments"""
     def __init__(self):
         super().__init__()
         self.add_argument("-r", dest="requirement_file", help="Path to pip requirements file.")
