@@ -88,7 +88,7 @@ def install_using_pip(req: str, flags: PipFlags) -> None:
 def get_pip_requirements(req: str) -> Dict[str, str]:
     abspath = os.path.abspath(os.path.dirname(__file__))
     dep_script = os.path.join(abspath, "get_pip_deps.py")
-    
+
     r = subprocess.run([sys.executable, dep_script, req],
                        stdout=subprocess.PIPE)
     try:
@@ -108,10 +108,10 @@ def parse_requirements_file(path: str) -> List[str]:
     reqs = []
     with open(path, "r") as infile:
         for line in infile:
-            line = line.strip()
+            line = line.split("#", maxsplit=1)[0].strip()
             if line.startswith("-"):
                 raise NotImplementedError("Pip flags in requirements files are not understood.")
-            elif not line or line.startswith("#"):
+            elif not line:
                 continue
             else:
                 reqs.append(line)
@@ -119,9 +119,10 @@ def parse_requirements_file(path: str) -> List[str]:
 
 
 def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
+    print(f"Trying to install {req}")
     if os.environ.get("VIRTUAL_ENV"):
         print("In a virtual environment, please use the `pip` command.")
-        exit(-1)        
+        exit(-1)
 
     if opts.pop("requirement", False):
         print(f"Reading requirements file {req}")
