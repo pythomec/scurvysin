@@ -18,11 +18,12 @@ more information than necessary. It also can stop working.
 
 - Python 3.6+
 - conda *if the tool is to have any sense*
+- mamba *conda alternative for better effeciency*
 
 Tested against:
 
-- pip 18.1, 19.1, 19.2
-- conda 4.6.12, 4.7.11
+- pip 21.2+
+- conda 4.6-4.10 (more or less)
 
 ## Installation
 
