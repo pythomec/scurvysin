@@ -21,6 +21,7 @@ Examples:
         }
 """
 import json
+from optparse import Values
 import os
 import sys
 import tempfile
@@ -31,14 +32,22 @@ from typing import List
 import pip
 
 # Sin: Importing from protected modules
-from pip._internal import main
 pip_major_minor = [int(v) for v in pip.__version__.split(".")[:2]]
 
-if pip_major_minor >= [19, 2]:
-    from pip._internal.legacy_resolve import Resolver
-    from pip._internal.utils.misc import ensure_dir
-else:
-    from pip._internal.resolve import Resolver, ensure_dir
+if pip_major_minor < [21, 2]:
+    raise ImportError(f"Invalid pip version: {pip_major_minor}, please use at least 21.2")
+
+from pip._internal.commands.download import (
+    DownloadCommand,
+    make_target_python,
+    normalize_path,
+    ensure_dir,
+    TempDirectory,
+    get_requirement_tracker,
+    with_cleanup,
+    cmdoptions,
+    SUCCESS
+)
 from pip._internal.req.req_install import InstallRequirement
 
 
@@ -49,16 +58,7 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
        with version specification.
 
     It runs the equivalent of `pip download` command
-    with a monkey-patched resolver that stops at the
-    first level of dependency tree.
-
-    This hack works, but keep this in mind:
-        1) Monkey patching is a bad idea in general.
-        2) Relying on anything starting with a "_" is a bad idea.
-        3) Pip documentation explicitly discourages attempts to use it as library.
-
-    The resolver is simplified a bit - we removed the parts
-    that are not used.
+    with a monkey-patched run.
     
     Examples:
         >>> get_dependencies("pandas==0.24")
@@ -71,47 +71,82 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
     sys.stdout = StringIO()
     sys.stderr = StringIO()
 
+    requirements = []   
+    class FakeDownloadCommand(DownloadCommand):
+        @with_cleanup
+        def run(self, options: Values, args: List[str]) -> int:
+            print(options)
+
+            options.ignore_installed = True
+            # editable doesn't really make sense for `pip download`, but the bowels
+            # of the RequirementSet code require that property.
+            options.editables = []
+
+            cmdoptions.check_dist_restriction(options)
+
+            options.download_dir = normalize_path(options.download_dir)
+            ensure_dir(options.download_dir)
+
+            session = self.get_default_session(options)
+
+            target_python = make_target_python(options)
+            finder = self._build_package_finder(
+                options=options,
+                session=session,
+                target_python=target_python,
+                ignore_requires_python=options.ignore_requires_python,
+            )
+
+            req_tracker = self.enter_context(get_requirement_tracker())
+
+            directory = TempDirectory(
+                delete=not options.no_clean,
+                kind="download",
+                globally_managed=True,
+            )
+
+            reqs = self.get_requirements(args, options, finder, session)
+
+            preparer = self.make_requirement_preparer(
+                temp_build_dir=directory,
+                options=options,
+                req_tracker=req_tracker,
+                session=session,
+                finder=finder,
+                download_dir=options.download_dir,
+                use_user_site=False,
+            )
+
+            resolver = self.make_resolver(
+                preparer=preparer,
+                finder=finder,
+                options=options,
+                ignore_requires_python=options.ignore_requires_python,
+                py_version_info=options.python_version,
+            )
+
+            self.trace_basic_info(finder)
+
+            requirement_set = resolver.resolve(reqs, check_supported_wheels=True)
+
+            nonlocal requirements
+            for req in requirement_set.requirements.values():
+                requirements.append(req)
+
+            return SUCCESS
+
+
     try:
-        found_reqs = []  # type: List[InstallRequirement]
+        command = FakeDownloadCommand("ignore", "ignore")
+        command.main([r])
+        requirements.sort(key=lambda l: l.name)
 
-        # Sin: Monkey-patching
-        def new_resolve(self, requirement_set):
-            # make the wheelhouse
-            if self.preparer.wheel_download_dir:
-                ensure_dir(self.preparer.wheel_download_dir)
-
-            # If any top-level requirement has a hash specified, enter
-            # hash-checking mode, which requires hashes from all.
-            root_reqs = (
-                requirement_set.unnamed_requirements +
-                list(requirement_set.requirements.values())
-            )
-            self.require_hashes = (
-                requirement_set.require_hashes or
-                any(req.has_hash_options for req in root_reqs)
-            )
-
-            for req in root_reqs:
-                found_reqs.extend(self._resolve_one(requirement_set, req))
-
-        Resolver.resolve = new_resolve
-
-        try:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                os.chdir(tmpdir)
-                main(["download", r, "-qqqqq"])
-        except Exception:
-            pass
-
-        if "Could not find" in sys.stderr.getvalue():
-            raise RuntimeError("Not found.")
-
+        # The set contains the package itself, so we need to remove it.
+        return [l for l in requirements if str(l.req) != r]
+        
     finally:
         sys.stdout = old_stdout
         sys.stderr = old_stderr
-
-    found_reqs.sort(key=lambda l: l.name)
-    return found_reqs
 
 
 def run():

@@ -88,9 +88,11 @@ def install_using_pip(req: str, flags: PipFlags) -> None:
 def get_pip_requirements(req: str) -> Dict[str, str]:
     abspath = os.path.abspath(os.path.dirname(__file__))
     dep_script = os.path.join(abspath, "get_pip_deps.py")
+    
     r = subprocess.run([sys.executable, dep_script, req],
                        stdout=subprocess.PIPE)
     try:
+        # print(r.stdout)
         data = json.loads(r.stdout)
         if "error" in data:
             print(f"Error: {data['error']}")
