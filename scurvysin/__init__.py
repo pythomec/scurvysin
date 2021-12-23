@@ -69,7 +69,7 @@ class PipArgumentParser(argparse.ArgumentParser):
     """Parser to support additional pip --arguments"""
     def __init__(self):
         super().__init__()
-        self.add_argument("-r", dest="requirement_file", help="Path to pip requirements file.")
+        self.add_argument("-r", "--requirement", dest="requirement_file", help="Path to pip requirements file.")
 
 
 def already_satisfied(req: str) -> bool:
@@ -119,7 +119,7 @@ def parse_requirements_file(path: str) -> List[str]:
             line = line.split("#", maxsplit=1)[0].strip()
             if line.startswith("-"):
                 try:
-                    pip_args = PiPArgParser().parse_args(line.split())
+                    pip_args = PipArgumentParser().parse_args(line.split())
                 except Exception as err:
                     print(f"Error parsing pip args: {err}")
                 reqs += parse_requirements_file(os.path.join(os.path.dirname(path), pip_args.requirement_file))
