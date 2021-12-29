@@ -6,6 +6,7 @@ dependencies as possible using `conda` and `pip`
 in the remaining items from the dependency tree.
 """
 
+import argparse
 import json
 import os
 import subprocess
@@ -64,6 +65,13 @@ class PipFlags:
             return ['install']
 
 
+class PipArgumentParser(argparse.ArgumentParser):
+    """Parser to support additional pip --arguments"""
+    def __init__(self):
+        super().__init__()
+        self.add_argument("-r", "--requirement", dest="requirement_file", help="Path to pip requirements file.")
+
+
 def already_satisfied(req: str) -> bool:
     requirement = Requirement(req)
     environment = Environment()
@@ -110,7 +118,11 @@ def parse_requirements_file(path: str) -> List[str]:
         for line in infile:
             line = line.split("#", maxsplit=1)[0].strip()
             if line.startswith("-"):
-                raise NotImplementedError("Pip flags in requirements files are not understood.")
+                try:
+                    pip_args = PipArgumentParser().parse_args(line.split())
+                except Exception as err:
+                    print(f"Error parsing pip args: {err}")
+                reqs += parse_requirements_file(os.path.join(os.path.dirname(path), pip_args.requirement_file))
             elif not line:
                 continue
             else:
