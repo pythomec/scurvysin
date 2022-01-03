@@ -41,11 +41,14 @@ class CondaFlags:
         """
         self.dry_run = args.dry_run
 
-    def expfl(self) -> list:
+    def expfl(self) -> List[str]:
         if self.dry_run:
-            return ['--dry-run']
+            flags = ["--dry-run"]
         else:
-            return []
+            flags = []
+        if CONDA_COMMAND == "mamba":
+            flags.append("--no-banner")
+        return flags
 
 
 class PipFlags:
@@ -57,20 +60,26 @@ class PipFlags:
         """
         self.dry_run = args.dry_run
 
-    def expfl(self) -> list:
+    def expfl(self) -> List[str]:
         # pip does not have a --dry-run option, but download is more or less
         # a dry run counterpart to install.
         if self.dry_run:
-            return ['download']
+            return ["download"]
         else:
-            return ['install']
+            return ["install"]
 
 
 class PipArgumentParser(argparse.ArgumentParser):
     """Parser to support additional pip --arguments"""
+
     def __init__(self):
         super().__init__()
-        self.add_argument("-r", "--requirement", dest="requirement_file", help="Path to pip requirements file.")
+        self.add_argument(
+            "-r",
+            "--requirement",
+            dest="requirement_file",
+            help="Path to pip requirements file.",
+        )
 
 
 def already_satisfied(req: str) -> bool:
@@ -80,10 +89,12 @@ def already_satisfied(req: str) -> bool:
 
 
 def available_in_conda(req: str) -> bool:
-    r = subprocess.run([CONDA_COMMAND, "install", "-d", req],
-                       stderr=subprocess.PIPE,
-                       stdout=subprocess.PIPE)
-    return not(r.returncode)
+    r = subprocess.run(
+        [CONDA_COMMAND, "install", "-d", req],
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+    return not (r.returncode)
 
 
 def install_using_conda(req: str, flags: CondaFlags) -> None:
@@ -104,7 +115,9 @@ def parse_requirements_file(path: str) -> List[str]:
                     pip_args = PipArgumentParser().parse_args(line.split())
                 except Exception as err:
                     print(f"Error parsing pip args: {err}")
-                reqs += parse_requirements_file(os.path.join(os.path.dirname(path), pip_args.requirement_file))
+                reqs += parse_requirements_file(
+                    os.path.join(os.path.dirname(path), pip_args.requirement_file)
+                )
             elif not line:
                 continue
             else:
@@ -113,13 +126,13 @@ def parse_requirements_file(path: str) -> List[str]:
 
 
 def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -> None:
-    print(f"Trying to install {req}")
+    print(f"Trying to install {req}...")
     if os.environ.get("VIRTUAL_ENV"):
         print("In a virtual environment, please use the `pip` command.")
         exit(-1)
 
     if opts.pop("requirement", False):
-        print(f"Reading requirements file {req}")
+        print(f"Reading requirements file {req}...")
         requirements = parse_requirements_file(req)
         print(f"Dependencies from {req}: {requirements}.")
         for requirement in requirements:
