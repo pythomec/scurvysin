@@ -14,6 +14,7 @@ import sys
 from pkg_resources import Requirement, Environment
 from typing import Dict, List
 
+from scurvysin.pip_deps import get_pip_dependencies
 
 __version__ = "2021.0"
 
@@ -90,26 +91,7 @@ def install_using_conda(req: str, flags: CondaFlags) -> None:
 
 
 def install_using_pip(req: str, flags: PipFlags) -> None:
-    subprocess.call(["pip"] +  flags.expfl() + ["--no-deps", req])
-
-
-def get_pip_requirements(req: str) -> Dict[str, str]:
-    abspath = os.path.abspath(os.path.dirname(__file__))
-    dep_script = os.path.join(abspath, "get_pip_deps.py")
-
-    r = subprocess.run([sys.executable, dep_script, req],
-                       stdout=subprocess.PIPE)
-    try:
-        # print(r.stdout)
-        data = json.loads(r.stdout)
-        if "error" in data:
-            print(f"Error: {data['error']}")
-            exit(1)
-        else:
-            return data["requirements"]
-    except json.decoder.JSONDecodeError as err:
-        print("Invalid JSON")
-        exit(1)
+    subprocess.call(["pip"] + flags.expfl() + ["--no-deps", req])
 
 
 def parse_requirements_file(path: str) -> List[str]:
@@ -156,9 +138,10 @@ def try_install(req: str, opts: dict, coflags: CondaFlags, pipflags: PipFlags) -
             install_using_conda(req, coflags)
     else:
         print(f"Checking dependencies for {req} using pip...")
-        requirements = get_pip_requirements(req)
-        print(f"Dependencies for {req}: {list(requirements.values())}.")
-        for requirement in requirements.values():
+        requirements = get_pip_dependencies(req)
+        req_strings = [str(req.req) for req in requirements]
+        print(f"Dependencies for {req}: {req_strings}.")
+        for requirement in req_strings:
             try_install(requirement, opts, coflags, pipflags)
         if opts["show_only"]:
             print(f"Would install {req} using pip.")
