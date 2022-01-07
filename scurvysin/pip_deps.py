@@ -1,25 +1,3 @@
-#!/usr/bin/env python3
-"""Script to extract a list of first-level dependencies using pip.
-
-Warning: This file is not meant to be imported as a module.
-
-Examples:
-    $ python get_pip_deps.py pandas==0.24
-
-        {
-            "requirements": {
-                "pytz": "pytz>=2011k",
-                "numpy": "numpy>=1.12.0",
-                "python-dateutil": "python-dateutil>=2.5.0"
-            }
-        }
-
-    $ python get_pip_deps.py n0nex1st3nt
-
-        {
-            "error": "Not found."
-        }
-"""
 import json
 from optparse import Values
 import os
@@ -31,12 +9,20 @@ from typing import List
 
 import pip
 
-# Sin: Importing from protected modules
+
+def _version_to_string(version: List[int]) -> str:
+    return ".".join(str(v) for v in version)
+
+
+MIN_ALLOWED_PIP = [21, 1]
 pip_major_minor = [int(v) for v in pip.__version__.split(".")[:2]]
+if pip_major_minor < MIN_ALLOWED_PIP:
+    raise ImportError(
+        f"Invalid pip version: {_version_to_string(pip_major_minor)}, "
+        "please use at least {_version_to_string(MIN_ALLOWED_PIP)}."
+    )
 
-if pip_major_minor < [21, 2]:
-    raise ImportError(f"Invalid pip version: {pip_major_minor}, please use at least 21.2")
-
+# Sin: Importing from protected modules
 from pip._internal.commands.download import (
     DownloadCommand,
     make_target_python,
@@ -46,20 +32,20 @@ from pip._internal.commands.download import (
     get_requirement_tracker,
     with_cleanup,
     cmdoptions,
-    SUCCESS
+    SUCCESS,
 )
 from pip._internal.req.req_install import InstallRequirement
 
 
-def get_dependencies(r: str) -> List[InstallRequirement]:
+def get_pip_dependencies(r: str) -> List[InstallRequirement]:
     """Get direct dependencies for a requirement string.
 
     :param r: Requirement - it can be a package name or a name
        with version specification.
 
     It runs the equivalent of `pip download` command
-    with a monkey-patched run.
-    
+    with a patched run.
+
     Examples:
         >>> get_dependencies("pandas==0.24")
         [<InstallRequirement object: numpy>=1.12.0 (from pandas==0.24) editable=False>,
@@ -71,7 +57,8 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
     sys.stdout = StringIO()
     sys.stderr = StringIO()
 
-    requirements = []   
+    requirements = []
+
     class FakeDownloadCommand(DownloadCommand):
         @with_cleanup
         def run(self, options: Values, args: List[str]) -> int:
@@ -135,7 +122,6 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
 
             return SUCCESS
 
-
     try:
         command = FakeDownloadCommand("ignore", "ignore")
         command.main([r])
@@ -143,33 +129,7 @@ def get_dependencies(r: str) -> List[InstallRequirement]:
 
         # The set contains the package itself, so we need to remove it.
         return [l for l in requirements if str(l.req) != r]
-        
+
     finally:
         sys.stdout = old_stdout
         sys.stderr = old_stderr
-
-
-def run():
-    """Get the dependencies and write them to stdout in JSON format.
-
-    It takes the first argument from the command line.
-    """
-    req = sys.argv[1]
-    try:
-        deps = get_dependencies(req)
-        data = {
-            "requirements": {
-                dep.name: str(dep.req) for dep in deps
-            }
-        }
-    except RuntimeError as exc:
-        data = {
-            "error": str(exc)
-        }
-    print(json.dumps(data, indent=2))
-
-
-if __name__ == "__main__":
-    run()
-else:
-    warnings.warn("`get_pip_deps` is not meant to be imported as module.")
